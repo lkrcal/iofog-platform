@@ -42,10 +42,10 @@ steps:
     inputs:
       secureFile: 'develop-msv-config.yaml'
 
-  - task: DockerInstaller@0
-    displayName: 'Install Docker'
-    inputs:
-      dockerVersion: '18.09.1-ce'
+  # - task: DockerInstaller@0
+  #   displayName: 'Install Docker'
+  #   inputs:
+  #     dockerVersion: '18.09.1-ce'
 
   - script: |
       echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
