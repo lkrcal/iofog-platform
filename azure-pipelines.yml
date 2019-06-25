@@ -42,6 +42,11 @@ steps:
     inputs:
       secureFile: 'develop-msv-config.yaml'
 
+  - task: DockerInstaller@0
+    displayName: 'Install Docker'
+    inputs:
+      dockerVersion: '18.09.1-ce'
+
   - script: |
       echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
       curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -81,7 +86,7 @@ steps:
     displayName: 'Destroy existing infrastructure'
     continueOnError: 'true'
     workingDirectory: $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop
-    # condition: and(always(), eq(variables['Build.Reason'], 'Schedule'))   
+    # condition: and(always(), eq(variables['Build.Reason'], 'Schedule'))
 
   - script: |
       terraform apply -var-file=$(Agent.TempDirectory)/develop.tfvars \
@@ -96,16 +101,15 @@ steps:
     workingDirectory: $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop
     env:
       PACKAGE_CLOUD_TOKEN: $(agentPackageCloudToken)
-
-  # - script: |
-  #     python3 ./$(System.DefaultWorkingDirectory)/infrastructure/ansible/scripts/setup.py --config $(Agent.TempDirectory)/develop-msv-config.yaml'
-  #   displayName: 'Deploy microservice'
+    continueOnError: 'true'
 
   - script: |
-      ls
-      docker pull iofog/test-runner-develop:latest
-      docker run iofog/test-runner-develop:latest -name testrunner -v iofogctl_inventory.yaml:~/conf/environment.yaml
-      docker cp testrunner:/home/ .
+      cat iofogctl_inventory.yaml
+    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
+    displayName: 'Log iofog reources'
+
+  - script: |
+      docker run gcr.io/focal-freedom-236620/test-runner:lkrcal -n test-runner -v iofogctl_inventory.yaml:/conf/environment.yaml
     workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
     displayName: 'run tests'
 
