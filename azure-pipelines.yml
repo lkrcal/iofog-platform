@@ -42,6 +42,10 @@ steps:
     inputs:
       secureFile: 'develop-msv-config.yaml'
 
+  - task: KubectlInstaller@0
+    inputs:
+      kubectlVersion: 'v1.14.2'
+
   # - task: DockerInstaller@0
   #   displayName: 'Install Docker'
   #   inputs:
@@ -105,11 +109,8 @@ steps:
 
   - script: |
       cat iofogctl_inventory.yaml
-    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
-    displayName: 'Log iofog reources'
-
-  - script: |
-      docker run gcr.io/focal-freedom-236620/test-runner:lkrcal -n test-runner -v iofogctl_inventory.yaml:/conf/environment.yaml
+      CONTROLLER_IP=$(sed -n 's/.*kubecontrollerip: "\([0-9.]*\)"/\1/p' iofogctl_inventory.yaml)
+      docker run --name test-runner -e CONTROLLER="${CONTROLLER_IP}:51121" iofog/test-runner:1.1.0
     workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
     displayName: 'run tests'
 
