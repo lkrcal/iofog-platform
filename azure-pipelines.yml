@@ -111,7 +111,7 @@ steps:
       AGENT_HOST=$(yq r iofogctl_inventory.yaml 'agents[0].host')
       AGENT_PORT=$(yq r iofogctl_inventory.yaml 'agents[0].port')
       docker run --name test-runner \
-          -v "$(Agent.TempDirectory)/azure_ssh_key":/root/.ssh/id_ecdsa
+          -v "$(Agent.TempDirectory)/azure_ssh_key":/root/.ssh/id_ecdsa \
           -e CONTROLLER="${CONTROLLER_IP}:51121" \
           -e AGENTS="${AGENT_USER}@${AGENT_HOST}:${AGENT_PORT}" \
           iofog/test-runner:1.1.0
