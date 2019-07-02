@@ -61,6 +61,12 @@ steps:
     displayName: 'Install iofogctl'
 
   - script: |
+      sudo add-apt-repository ppa:rmescandon/yq
+      sudo apt update
+      sudo apt install yq -y
+    displayName: 'Install yq'
+
+  - script: |
       cp $(Agent.TempDirectory)/packet.token $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/packet.token
     displayName: 'Copy secret files'
 
@@ -101,7 +107,14 @@ steps:
   - script: |
       cat iofogctl_inventory.yaml
       CONTROLLER_IP=$(sed -n 's/.*kubecontrollerip: "\([0-9.]*\)"/\1/p' iofogctl_inventory.yaml)
-      docker run --name test-runner -e CONTROLLER="${CONTROLLER_IP}:51121" iofog/test-runner:1.1.0
+      AGENT_USER=$(yq r iofogctl_inventory.yaml 'agents[0].user')
+      AGENT_HOST=$(yq r iofogctl_inventory.yaml 'agents[0].host')
+      AGENT_PORT=$(yq r iofogctl_inventory.yaml 'agents[0].port')
+      docker run --name test-runner \
+          -v "$(Agent.TempDirectory)/azure_ssh_key":/root/.ssh/id_ecdsa
+          -e CONTROLLER="${CONTROLLER_IP}:51121" \
+          -e AGENTS="${AGENT_USER}@${AGENT_HOST}:${AGENT_PORT}" \
+          iofog/test-runner:1.1.0
     workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
     displayName: 'run tests'
 
