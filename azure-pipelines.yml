@@ -70,39 +70,44 @@ steps:
       cp $(Agent.TempDirectory)/packet.token $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/packet.token
     displayName: 'Copy secret files'
 
-  - script: |
-      wget https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
-      unzip terraform_0.11.14_linux_amd64.zip
-      sudo mv terraform /usr/local/bin/terraform
-    displayName: 'Install terraform'
-    workingDirectory: $(Agent.TempDirectory)
+  # - script: |
+  #     wget https://releases.hashicorp.com/terraform/0.11.14/terraform_0.11.14_linux_amd64.zip
+  #     unzip terraform_0.11.14_linux_amd64.zip
+  #     sudo mv terraform /usr/local/bin/terraform
+  #   displayName: 'Install terraform'
+  #   workingDirectory: $(Agent.TempDirectory)
 
-  - script: |
-      terraform init
-    displayName: 'Init terraform'
-    workingDirectory: $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop
+  # - script: |
+  #     terraform init
+  #   displayName: 'Init terraform'
+  #   workingDirectory: $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop
 
-  - script: |
-      terraform destroy -var-file=$(Agent.TempDirectory)/develop.tfvars -auto-approve
-    displayName: 'Destroy existing infrastructure'
-    continueOnError: 'true'
-    workingDirectory: $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop
-    # condition: and(always(), eq(variables['Build.Reason'], 'Schedule'))
+  # - script: |
+  #     terraform destroy -var-file=$(Agent.TempDirectory)/develop.tfvars -auto-approve
+  #   displayName: 'Destroy existing infrastructure'
+  #   continueOnError: 'true'
+  #   workingDirectory: $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop
+  #   # condition: and(always(), eq(variables['Build.Reason'], 'Schedule'))
 
-  - script: |
-      terraform apply -var-file=$(Agent.TempDirectory)/develop.tfvars \
-                      -var 'ssh_key=$(Agent.TempDirectory)/azure_ssh_key' \
-                      -var 'controller_image=$(controller_image)' \
-                      -var 'connector_image=$(connector_image)' \
-                      -var 'operator_image=$(operator_image)' \
-                      -var 'kubelet_image=$(kubelet_image)' \
-                      -var 'agent_repo=$(agent_repo)' \
-                      -var 'agent_version=$(agent_version)' -auto-approve
-    displayName: 'Deploy infrastructure'
-    workingDirectory: $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop
-    env:
-      PACKAGE_CLOUD_TOKEN: $(agentPackageCloudToken)
-    continueOnError: 'true'
+  # - script: |
+  #     terraform apply -var-file=$(Agent.TempDirectory)/develop.tfvars \
+  #                     -var 'ssh_key=$(Agent.TempDirectory)/azure_ssh_key' \
+  #                     -var 'controller_image=$(controller_image)' \
+  #                     -var 'connector_image=$(connector_image)' \
+  #                     -var 'operator_image=$(operator_image)' \
+  #                     -var 'kubelet_image=$(kubelet_image)' \
+  #                     -var 'agent_repo=$(agent_repo)' \
+  #                     -var 'agent_version=$(agent_version)' -auto-approve
+  #   displayName: 'Deploy infrastructure'
+  #   workingDirectory: $(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop
+  #   env:
+  #     PACKAGE_CLOUD_TOKEN: $(agentPackageCloudToken)
+  #   continueOnError: 'true'
+
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'Edgeworx GCP'
+      command: 'login'
 
   - script: |
       cat iofogctl_inventory.yaml
@@ -114,7 +119,7 @@ steps:
           -v "$(Agent.TempDirectory)/azure_ssh_key":/root/.ssh/id_ecdsa \
           -e CONTROLLER="${CONTROLLER_IP}:51121" \
           -e AGENTS="${AGENT_USER}@${AGENT_HOST}:${AGENT_PORT}" \
-          iofog/test-runner:1.1.0
+          gcr.io/focal-freedom-236620/test-runner:1820
     workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
     displayName: 'run tests'
 
