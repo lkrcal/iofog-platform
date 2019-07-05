@@ -62,7 +62,7 @@ steps:
   - script: |
       which docker-credential-gcloud
       echo "gcloud auth configure-docker"
-      gcloud auth configure-docker
+      gcloud auth configure-docker --quiet
       echo "docker run --name test-runner gcr.io/focal-freedom-236620/test-runner:latest"
       docker run --name test-runner gcr.io/focal-freedom-236620/test-runner:latest
     workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
