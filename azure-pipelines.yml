@@ -37,17 +37,19 @@ steps:
     inputs:
       secureFile: 'develop-msv-config.yaml'
       
-  - script: |
-      echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-      curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-      sudo apt-get update && sudo apt-get install google-cloud-sdk
-
-      gcloud --quiet auth activate-service-account --key-file=$(Agent.TempDirectory)/azure-gcp.json
-      gcloud --quiet config set project focal-freedom-236620
-      
-      # set env var GOOGLE_APPLICATION_CREDENTIALS for terraform to pick up for GCP authentication
-      echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(Agent.TempDirectory)/azure-gcp.json"
+  - task: Bash@3
     displayName: 'Install and init gcloud'
+    inputs:
+      script: |
+        echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+        sudo apt-get update && sudo apt-get install google-cloud-sdk
+
+        gcloud --quiet auth activate-service-account --key-file=$(Agent.TempDirectory)/azure-gcp.json
+        gcloud --quiet config set project focal-freedom-236620
+        
+        # set env var GOOGLE_APPLICATION_CREDENTIALS for terraform to pick up for GCP authentication
+        echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(Agent.TempDirectory)/azure-gcp.json"
 
   # - task: Docker@2
   #   inputs:
