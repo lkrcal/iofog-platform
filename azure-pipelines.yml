@@ -33,11 +33,6 @@ steps:
       secureFile: 'azure_ssh_key'
 
   - task: DownloadSecureFile@1
-    displayName: 'Download terraform vars file for develop'
-    inputs:
-      secureFile: develop.tfvars
-
-  - task: DownloadSecureFile@1
     displayName: 'Download secure file - healthcare microservice app config'
     inputs:
       secureFile: 'develop-msv-config.yaml'
