@@ -13,7 +13,7 @@ variables:
   group: 'pipelines'
 
 pool:
-  vmImage: 'Ubuntu-16.04'
+  name: 'GCP Ubuntu 1604'
 
 steps:
 
