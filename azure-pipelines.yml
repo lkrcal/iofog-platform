@@ -4,66 +4,70 @@ trigger:
       - develop
       - fix-pipeline
 
-  paths:
-    exclude:
-      - README.md
+  # paths:
+  #   exclude:
+  #     - README.md
 
 
-variables:
-  group: 'pipelines'
+# variables:
+#   group: 'pipelines'
 
 pool:
   name: 'GCP Ubuntu 1604'
 
 steps:
 
-  - task: DownloadSecureFile@1
-    displayName: 'Download secure file for azure to access gcp'
-    inputs:
-      secureFile: 'azure-gcp.json'
+  # - task: DownloadSecureFile@1
+  #   displayName: 'Download secure file for azure to access gcp'
+  #   inputs:
+  #     secureFile: 'azure-gcp.json'
 
-  - task: DownloadSecureFile@1
-    displayName: 'Download packet token for terraform'
-    inputs:
-      secureFile: packet.token
+  # - task: DownloadSecureFile@1
+  #   displayName: 'Download packet token for terraform'
+  #   inputs:
+  #     secureFile: packet.token
 
-  - task: DownloadSecureFile@1
-    displayName: 'Download secure file for ssh access for agents'
-    inputs:
-      secureFile: 'azure_ssh_key'
+  # - task: DownloadSecureFile@1
+  #   displayName: 'Download secure file for ssh access for agents'
+  #   inputs:
+  #     secureFile: 'azure_ssh_key'
 
-  - task: DownloadSecureFile@1
-    displayName: 'Download secure file - healthcare microservice app config'
-    inputs:
-      secureFile: 'develop-msv-config.yaml'
+  # - task: DownloadSecureFile@1
+  #   displayName: 'Download secure file - healthcare microservice app config'
+  #   inputs:
+  #     secureFile: 'develop-msv-config.yaml'
       
   - task: CmdLine@2
-    displayName: 'Install and init gcloud'
     inputs:
-      script: |
-        echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-        curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-        sudo apt-get update && sudo apt-get install google-cloud-sdk
+      script: echo "Hello World!"
 
-        gcloud --quiet auth activate-service-account --key-file=$(Agent.TempDirectory)/azure-gcp.json
-        gcloud --quiet config set project focal-freedom-236620
+  # - task: CmdLine@2
+  #   displayName: 'Install and init gcloud'
+  #   inputs:
+  #     script: |
+  #       echo "deb https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+  #       curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+  #       sudo apt-get update && sudo apt-get install google-cloud-sdk
+
+  #       gcloud --quiet auth activate-service-account --key-file=$(Agent.TempDirectory)/azure-gcp.json
+  #       gcloud --quiet config set project focal-freedom-236620
         
-        # set env var GOOGLE_APPLICATION_CREDENTIALS for terraform to pick up for GCP authentication
-        echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(Agent.TempDirectory)/azure-gcp.json"
+  #       # set env var GOOGLE_APPLICATION_CREDENTIALS for terraform to pick up for GCP authentication
+  #       echo "##vso[task.setvariable variable=GOOGLE_APPLICATION_CREDENTIALS]$(Agent.TempDirectory)/azure-gcp.json"
 
   # - task: Docker@2
   #   inputs:
   #     containerRegistry: 'Edgeworx GCP'
   #     command: 'login'
 
-  - script: |
-      which docker-credential-gcloud
-      echo "gcloud auth configure-docker"
-      gcloud auth configure-docker --quiet
-      echo "docker run --name test-runner gcr.io/focal-freedom-236620/test-runner:latest"
-      docker run --name test-runner gcr.io/focal-freedom-236620/test-runner:latest
-    workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
-    displayName: 'run tests'
+  # - script: |
+  #     which docker-credential-gcloud
+  #     echo "gcloud auth configure-docker"
+  #     gcloud auth configure-docker --quiet
+  #     echo "docker run --name test-runner gcr.io/focal-freedom-236620/test-runner:latest"
+  #     docker run --name test-runner gcr.io/focal-freedom-236620/test-runner:latest
+  #   workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure/environments_gke/develop'
+  #   displayName: 'run tests'
 
   # # Publish Test Results
   # - task: PublishTestResults@2
